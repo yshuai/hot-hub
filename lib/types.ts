@@ -1,4 +1,4 @@
-export type SourceKind = "dailyhot" | "rss";
+export type SourceKind = "dailyhot" | "rss" | "builtin";
 
 export interface SourceConfig {
   id: string;
@@ -6,7 +6,10 @@ export interface SourceConfig {
   /** 分组:热榜 / 开源趋势 / AI·科技 / 账号订阅 */
   group: string;
   kind: SourceKind;
-  /** DailyHotApi 路由名(kind=dailyhot 时必填),如 douyin / toutiao / github */
+  /**
+   * kind=dailyhot → DailyHotApi 路由名(douyin / weibo / bilibili 等)
+   * kind=builtin  → 内置直连实现名(hackernews / github-trending / toutiao-board)
+   */
   route?: string;
   /** RSS 地址(kind=rss 时必填):RSSHub 路由、wewe-rss 公众号、AIHOT、GitHubTrendingRSS 等 */
   url?: string;

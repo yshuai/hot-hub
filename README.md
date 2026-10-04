@@ -9,9 +9,12 @@
 - **首页分组展示**:热榜 / 开源趋势 / AI·科技 / 账号订阅,每源 Top 30,ISR 缓存 10 分钟
 - **统一 RSS 输出**:`/api/feed` 把所有信源合成一条 feed,可在任意 RSS 阅读器订阅
 - **每日日报归档**:GitHub Actions 每天 08:00(北京时间)生成 `daily/YYYY-MM-DD.md` 并自动提交
-- **信源配置化**:增删信源只改 `lib/sources.ts`,两类适配器开箱即用:
-  - `dailyhot`:接 [DailyHotApi](https://github.com/imsyy/DailyHotApi)(60+ 平台热榜)
-  - `rss`:通用 RSS(RSSHub、wewe-rss、AIHOT、GitHubTrendingRSS 等一切 feed)
+- **信源配置化**:增删信源只改 `lib/sources.ts`,三类适配器开箱即用:
+  - `builtin`:官方接口直连(头条热榜、GitHub Trending、Hacker News),不依赖第三方服务
+  - `rss`:通用 RSS(36氪、RSSHub、wewe-rss、AIHOT、GitHubTrendingRSS 等一切 feed)
+  - `dailyhot`:接自建的 [DailyHotApi](https://github.com/imsyy/DailyHotApi) 实例(60+ 平台热榜)
+
+> ⚠️ 早期版本的默认源走公共实例 `api-hot.imsyy.top`,该实例已下线(域名停止解析)。现在默认源全部为官方直连;抖音/微博/B站等源在 `lib/sources.ts` 中以注释保留,自建 DailyHotApi 后取消注释即可。
 
 ## 快速开始
 
@@ -33,7 +36,7 @@ vercel --prod
 
 | 变量 | 默认 | 说明 |
 |---|---|---|
-| `DAILYHOT_API_BASE` | `https://api-hot.imsyy.top` | DailyHotApi 实例地址。公共实例仅作演示,**建议 Vercel 一键部署 [imsyy/DailyHotApi-Vercel](https://github.com/imsyy/DailyHotApi-Vercel) 后换成自己的** |
+| `DAILYHOT_API_BASE` | `https://api-hot.imsyy.top` | DailyHotApi 实例地址。**公共实例已下线,使用 `dailyhot` 类源前必须自建**([imsyy/DailyHotApi-Vercel](https://github.com/imsyy/DailyHotApi-Vercel) 一键部署) |
 | `RSSHUB_BASE` | `https://rsshub.app` | RSSHub 实例,用于账号订阅类路由 |
 | `NEXT_PUBLIC_SITE_URL` | 自动 | 站点对外地址,用于 RSS `<link>` |
 

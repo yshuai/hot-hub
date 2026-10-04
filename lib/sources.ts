@@ -1,9 +1,9 @@
 import type { SourceConfig } from "./types";
 
 /**
- * DailyHotApi 实例(imsyy/DailyHotApi)。
- * 公共实例仅作演示,建议 Vercel 一键部署 imsyy/DailyHotApi-Vercel 后,
- * 在环境变量 DAILYHOT_API_BASE 里换成自己的地址。
+ * DailyHotApi 实例(imsyy/DailyHotApi),供 kind=dailyhot 的源使用。
+ * 注意:公共实例 api-hot.imsyy.top 已下线;抖音/微博/B站等源需要
+ * 自建实例(Vercel 一键部署 imsyy/DailyHotApi-Vercel 或 Docker)后启用。
  */
 export const DAILYHOT_API_BASE =
   process.env.DAILYHOT_API_BASE ?? "https://api-hot.imsyy.top";
@@ -16,21 +16,24 @@ export const RSSHUB_BASE = process.env.RSSHUB_BASE ?? "https://rsshub.app";
 
 /**
  * 信源清单:增删改这里即可,页面与 /api/feed 自动跟随。
- * kind=dailyhot → 调 DailyHotApi;kind=rss → 通用 RSS 解析。
+ *
+ * 默认源全部为「builtin 官方接口直连」或「官方 RSS」,不依赖第三方聚合服务;
+ * 抖音/微博/B站等平台没有稳定公开接口,自建 DailyHotApi 后取消注释启用。
  */
 export const SOURCES: SourceConfig[] = [
-  // ── 热榜(DailyHotApi 还有微博/知乎/快手等 60+ 路由,按需增删)────────
-  { id: "douyin", name: "抖音热榜", group: "热榜", kind: "dailyhot", route: "douyin", home: "https://www.douyin.com/hot" },
-  { id: "toutiao", name: "今日头条", group: "热榜", kind: "dailyhot", route: "toutiao", home: "https://www.toutiao.com/" },
-  { id: "weibo", name: "微博热搜", group: "热榜", kind: "dailyhot", route: "weibo", home: "https://s.weibo.com/top/summary" },
-  { id: "bilibili", name: "哔哩哔哩", group: "热榜", kind: "dailyhot", route: "bilibili", home: "https://www.bilibili.com/v/popular/rank/all" },
+  // ── 热榜 ──────────────────────────────────────────────────
+  { id: "toutiao", name: "今日头条热榜", group: "热榜", kind: "builtin", route: "toutiao-board", home: "https://www.toutiao.com/hot-event/hot-board/?origin=toutiao_pc" },
+  // 自建 DailyHotApi 后启用(DAILYHOT_API_BASE 指向你的实例):
+  // { id: "douyin", name: "抖音热榜", group: "热榜", kind: "dailyhot", route: "douyin", home: "https://www.douyin.com/hot" },
+  // { id: "weibo", name: "微博热搜", group: "热榜", kind: "dailyhot", route: "weibo", home: "https://s.weibo.com/top/summary" },
+  // { id: "bilibili", name: "哔哩哔哩", group: "热榜", kind: "dailyhot", route: "bilibili", home: "https://www.bilibili.com/v/popular/rank/all" },
 
   // ── 开源趋势 ──────────────────────────────────────────────
-  { id: "github", name: "GitHub Trending", group: "开源趋势", kind: "dailyhot", route: "github", home: "https://github.com/trending" },
+  { id: "github", name: "GitHub Trending", group: "开源趋势", kind: "builtin", route: "github-trending", home: "https://github.com/trending" },
 
   // ── AI·科技 ───────────────────────────────────────────────
-  { id: "hackernews", name: "Hacker News", group: "AI·科技", kind: "dailyhot", route: "hackernews", home: "https://news.ycombinator.com/" },
-  { id: "36kr", name: "36氪快讯", group: "AI·科技", kind: "dailyhot", route: "36kr", home: "https://36kr.com/newsflashes" },
+  { id: "hackernews", name: "Hacker News", group: "AI·科技", kind: "builtin", route: "hackernews", home: "https://news.ycombinator.com/" },
+  { id: "36kr", name: "36氪", group: "AI·科技", kind: "rss", url: "https://36kr.com/feed", home: "https://36kr.com/" },
 
   // ── 账号订阅(改成你自己的地址后把 enabled 改为 true)────────────────
   // 头条账号:token 从作者主页 URL 取,如 https://www.toutiao.com/c/user/token/MS4wLjABAAAAxxxx/
