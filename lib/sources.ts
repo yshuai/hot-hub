@@ -33,7 +33,8 @@ export const SOURCES: SourceConfig[] = [
 
   // ── AI·科技 ───────────────────────────────────────────────
   { id: "hackernews", name: "Hacker News", group: "AI·科技", kind: "builtin", route: "hackernews", home: "https://news.ycombinator.com/" },
-  { id: "36kr", name: "36氪", group: "AI·科技", kind: "rss", url: "https://36kr.com/feed", home: "https://36kr.com/" },
+  { id: "sspai", name: "少数派", group: "AI·科技", kind: "rss", url: "https://sspai.com/feed", home: "https://sspai.com/" },
+  // 36氪官方 feed(https://36kr.com/feed)XML 含非法实体,rss-parser 解析失败,暂不启用
 
   // ── 账号订阅(改成你自己的地址后把 enabled 改为 true)────────────────
   // 头条账号:token 从作者主页 URL 取,如 https://www.toutiao.com/c/user/token/MS4wLjABAAAAxxxx/

@@ -74,7 +74,7 @@ const HOT_SOURCES = [
   ["Hacker News", "builtin", "hackernews"],
 ];
 const RSS_SOURCES = [
-  ["36氪", "https://36kr.com/feed"],
+  ["少数派", "https://sspai.com/feed"],
   // ["头条账号", "https://你的-rsshub/toutiao/user/token/xxx"],
   // ["微信公众号", "https://你的-wewe-rss/feed/xxx"],
 ];
