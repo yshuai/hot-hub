@@ -64,12 +64,50 @@ const BUILTIN_FETCHERS = {
       .slice(0, TOP_N)
       .map((it, i) => `${i + 1}. [${it.Title}](${it.Url})`);
   },
+  async "bilibili-ranking"() {
+    const json = await fetchJson("https://api.bilibili.com/x/web-interface/ranking/v2");
+    return (json.data?.list ?? [])
+      .slice(0, TOP_N)
+      .map((v, i) => `${i + 1}. [${v.title}](${v.short_link_v2 || `https://www.bilibili.com/video/${v.bvid}`})`);
+  },
+  async "weibo-hot"() {
+    const json = await fetchJson("https://weibo.com/ajax/side/hotSearch");
+    const list = json?.data?.realtime ?? [];
+    if (!list.length) throw new Error("接口返回空(可能被风控)");
+    return list.slice(0, TOP_N).map((it, i) => {
+      const q = encodeURIComponent(it.word_scheme ?? `#${it.word}#`);
+      return `${i + 1}. [${it.word}](https://s.weibo.com/weibo?q=${q})`;
+    });
+  },
+  async "douyin-hot-hub"() {
+    const res = await fetch(
+      "https://raw.githubusercontent.com/lonnyzhang423/douyin-hot-hub/main/README.md",
+      { headers: { "user-agent": UA }, signal: AbortSignal.timeout(15_000) },
+    );
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const md = await res.text();
+    const start = md.indexOf("## 抖音热榜");
+    if (start === -1) throw new Error("未找到段落:抖音热榜");
+    const next = md.indexOf("\n## ", start + 1);
+    const body = next === -1 ? md.slice(start) : md.slice(start, next);
+    const re = /\d+\.\s+\[([^\]]+)\]\(([^)\s]+)\)/g;
+    const lines = [];
+    let m;
+    while ((m = re.exec(body)) && lines.length < TOP_N) {
+      lines.push(`${lines.length + 1}. [${m[1]}](${m[2]})`);
+    }
+    if (!lines.length) throw new Error("榜单数据为空");
+    return lines;
+  },
 };
 
 // 日报包含的源:[显示名, 类型, 取值]
 // builtin 类型取 BUILTIN_FETCHERS 的 key;rss 类型第三个元素是 feed 地址
 const HOT_SOURCES = [
+  ["抖音热榜", "builtin", "douyin-hot-hub"],
   ["今日头条热榜", "builtin", "toutiao-board"],
+  ["微博热搜", "builtin", "weibo-hot"],
+  ["哔哩哔哩", "builtin", "bilibili-ranking"],
   ["GitHub Trending", "builtin", "github-trending"],
   ["Hacker News", "builtin", "hackernews"],
 ];

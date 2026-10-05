@@ -14,8 +14,7 @@ const esc = (s: string) =>
 /** 把全部信源聚合成一条 RSS,方便在任意 RSS 阅读器里订阅"本站" */
 export async function GET(request: Request) {
   const results = await fetchAllSources();
-  const site =
-    process.env.NEXT_PUBLIC_SITE_URL ?? new URL(request.url).origin;
+  const site = process.env.NEXT_PUBLIC_SITE_URL ?? "https://hot-hub.vercel.app";
 
   const items = results
     .filter((r) => !r.error)

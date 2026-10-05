@@ -116,6 +116,58 @@ async function fetchToutiaoBoard(): Promise<FeedItem[]> {
     .slice(0, MAX_ITEMS);
 }
 
+/** B站排行榜:官方接口,无需鉴权 */
+async function fetchBilibiliRanking(): Promise<FeedItem[]> {
+  const json = await fetchJson("https://api.bilibili.com/x/web-interface/ranking/v2");
+  const list: any[] = Array.isArray(json?.data?.list) ? json.data.list : [];
+  return list
+    .slice(0, MAX_ITEMS)
+    .map((v) => ({
+      title: String(v.title ?? "").trim(),
+      url: String(v.short_link_v2 || (v.bvid ? `https://www.bilibili.com/video/${v.bvid}` : "")),
+      extra: v.stat?.view != null ? `${Math.round(v.stat.view / 10000)}万播放` : undefined,
+    }))
+    .filter((it) => it.title && it.url);
+}
+
+/** 微博热搜:网页端 ajax 接口(尽力而为,该接口可能因风控返回空) */
+async function fetchWeiboHot(): Promise<FeedItem[]> {
+  const json = await fetchJson("https://weibo.com/ajax/side/hotSearch");
+  const list: any[] = Array.isArray(json?.data?.realtime) ? json.data.realtime : [];
+  if (!list.length) throw new Error("接口返回空(可能被风控)");
+  return list
+    .map((it) => ({
+      title: String(it.word ?? "").trim(),
+      url: `https://s.weibo.com/weibo?q=${encodeURIComponent(it.word_scheme ?? `#${it.word}#`)}`,
+      extra: it.num != null ? String(it.num) : undefined,
+    }))
+    .filter((it) => it.title)
+    .slice(0, MAX_ITEMS);
+}
+
+/**
+ * lonnyzhang423/*-hot-hub 系列(douyin-hot-hub 等):
+ * GitHub Actions 每小时更新 README,解析其中指定段落的有序列表。
+ * 海外网络访问 raw.githubusercontent.com 稳定。
+ */
+async function fetchHotHubReadme(repo: string, section: string): Promise<FeedItem[]> {
+  const md = await fetchText(
+    `https://raw.githubusercontent.com/lonnyzhang423/${repo}/main/README.md`,
+  );
+  const start = md.indexOf(`## ${section}`);
+  if (start === -1) throw new Error(`未找到段落:${section}`);
+  const next = md.indexOf("\n## ", start + 1);
+  const body = next === -1 ? md.slice(start) : md.slice(start, next);
+  const re = /\d+\.\s+\[([^\]]+)\]\(([^)\s]+)\)/g;
+  const items: FeedItem[] = [];
+  let m: RegExpExecArray | null;
+  while ((m = re.exec(body)) && items.length < MAX_ITEMS) {
+    items.push({ title: m[1].trim(), url: m[2].trim() });
+  }
+  if (!items.length) throw new Error("榜单数据为空");
+  return items;
+}
+
 async function fetchBuiltin(src: SourceConfig): Promise<FeedItem[]> {
   switch (src.route) {
     case "hackernews":
@@ -124,6 +176,12 @@ async function fetchBuiltin(src: SourceConfig): Promise<FeedItem[]> {
       return fetchGithubTrending();
     case "toutiao-board":
       return fetchToutiaoBoard();
+    case "bilibili-ranking":
+      return fetchBilibiliRanking();
+    case "weibo-hot":
+      return fetchWeiboHot();
+    case "douyin-hot-hub":
+      return fetchHotHubReadme("douyin-hot-hub", "抖音热榜");
     default:
       throw new Error(`未知内置源:${src.route}`);
   }

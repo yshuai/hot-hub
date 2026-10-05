@@ -21,12 +21,11 @@ export const RSSHUB_BASE = process.env.RSSHUB_BASE ?? "https://rsshub.app";
  * 抖音/微博/B站等平台没有稳定公开接口,自建 DailyHotApi 后取消注释启用。
  */
 export const SOURCES: SourceConfig[] = [
-  // ── 热榜 ──────────────────────────────────────────────────
+  // ── 热榜(官方接口 / GitHub 归档直连,无需第三方实例)──────────────
+  { id: "douyin", name: "抖音热榜", group: "热榜", kind: "builtin", route: "douyin-hot-hub", home: "https://www.douyin.com/hot" },
   { id: "toutiao", name: "今日头条热榜", group: "热榜", kind: "builtin", route: "toutiao-board", home: "https://www.toutiao.com/hot-event/hot-board/?origin=toutiao_pc" },
-  // 自建 DailyHotApi 后启用(DAILYHOT_API_BASE 指向你的实例):
-  // { id: "douyin", name: "抖音热榜", group: "热榜", kind: "dailyhot", route: "douyin", home: "https://www.douyin.com/hot" },
-  // { id: "weibo", name: "微博热搜", group: "热榜", kind: "dailyhot", route: "weibo", home: "https://s.weibo.com/top/summary" },
-  // { id: "bilibili", name: "哔哩哔哩", group: "热榜", kind: "dailyhot", route: "bilibili", home: "https://www.bilibili.com/v/popular/rank/all" },
+  { id: "weibo", name: "微博热搜", group: "热榜", kind: "builtin", route: "weibo-hot", home: "https://s.weibo.com/top/summary" },
+  { id: "bilibili", name: "哔哩哔哩", group: "热榜", kind: "builtin", route: "bilibili-ranking", home: "https://www.bilibili.com/v/popular/rank/all" },
 
   // ── 开源趋势 ──────────────────────────────────────────────
   { id: "github", name: "GitHub Trending", group: "开源趋势", kind: "builtin", route: "github-trending", home: "https://github.com/trending" },
