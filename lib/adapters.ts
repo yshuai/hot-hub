@@ -182,6 +182,8 @@ async function fetchBuiltin(src: SourceConfig): Promise<FeedItem[]> {
       return fetchWeiboHot();
     case "douyin-hot-hub":
       return fetchHotHubReadme("douyin-hot-hub", "抖音热榜");
+    case "zhihu-hot-hub":
+      return fetchHotHubReadme("zhihu-hot-hub", "热门搜索");
     default:
       throw new Error(`未知内置源:${src.route}`);
   }

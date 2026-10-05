@@ -24,8 +24,11 @@ export const SOURCES: SourceConfig[] = [
   // ── 热榜(官方接口 / GitHub 归档直连,无需第三方实例)──────────────
   { id: "douyin", name: "抖音热榜", group: "热榜", kind: "builtin", route: "douyin-hot-hub", home: "https://www.douyin.com/hot" },
   { id: "toutiao", name: "今日头条热榜", group: "热榜", kind: "builtin", route: "toutiao-board", home: "https://www.toutiao.com/hot-event/hot-board/?origin=toutiao_pc" },
-  { id: "weibo", name: "微博热搜", group: "热榜", kind: "builtin", route: "weibo-hot", home: "https://s.weibo.com/top/summary" },
   { id: "bilibili", name: "哔哩哔哩", group: "热榜", kind: "builtin", route: "bilibili-ranking", home: "https://www.bilibili.com/v/popular/rank/all" },
+  { id: "zhihu", name: "知乎热榜", group: "热榜", kind: "builtin", route: "zhihu-hot-hub", home: "https://www.zhihu.com/hot" },
+  // 微博:官方接口对匿名海外 IP 返回 403,无稳定免鉴权通道;
+  // 自建国内出口的 DailyHotApi 后,把 kind 改为 "dailyhot"、route 改为 "weibo" 并 enabled: true
+  { id: "weibo", name: "微博热搜", group: "热榜", kind: "builtin", route: "weibo-hot", home: "https://s.weibo.com/top/summary", enabled: false },
 
   // ── 开源趋势 ──────────────────────────────────────────────
   { id: "github", name: "GitHub Trending", group: "开源趋势", kind: "builtin", route: "github-trending", home: "https://github.com/trending" },

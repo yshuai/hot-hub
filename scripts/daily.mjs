@@ -99,6 +99,26 @@ const BUILTIN_FETCHERS = {
     if (!lines.length) throw new Error("榜单数据为空");
     return lines;
   },
+  async "zhihu-hot-hub"() {
+    const res = await fetch(
+      "https://raw.githubusercontent.com/lonnyzhang423/zhihu-hot-hub/main/README.md",
+      { headers: { "user-agent": UA }, signal: AbortSignal.timeout(15_000) },
+    );
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const md = await res.text();
+    const start = md.indexOf("## 热门搜索");
+    if (start === -1) throw new Error("未找到段落:热门搜索");
+    const next = md.indexOf("\n## ", start + 1);
+    const body = next === -1 ? md.slice(start) : md.slice(start, next);
+    const re = /\d+\.\s+\[([^\]]+)\]\(([^)\s]+)\)/g;
+    const lines = [];
+    let m;
+    while ((m = re.exec(body)) && lines.length < TOP_N) {
+      lines.push(`${lines.length + 1}. [${m[1]}](${m[2]})`);
+    }
+    if (!lines.length) throw new Error("榜单数据为空");
+    return lines;
+  },
 };
 
 // 日报包含的源:[显示名, 类型, 取值]
@@ -106,7 +126,7 @@ const BUILTIN_FETCHERS = {
 const HOT_SOURCES = [
   ["抖音热榜", "builtin", "douyin-hot-hub"],
   ["今日头条热榜", "builtin", "toutiao-board"],
-  ["微博热搜", "builtin", "weibo-hot"],
+  ["知乎热榜", "builtin", "zhihu-hot-hub"],
   ["哔哩哔哩", "builtin", "bilibili-ranking"],
   ["GitHub Trending", "builtin", "github-trending"],
   ["Hacker News", "builtin", "hackernews"],
