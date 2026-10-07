@@ -39,17 +39,17 @@ export const SOURCES: SourceConfig[] = [
   // 36氪官方 feed(https://36kr.com/feed)XML 含非法实体,rss-parser 解析失败,暂不启用
 
   // ── 账号订阅:复制一行、改 name 和 token 即可订阅自己的账号 ────────────
-  // 头条账号:token 从作者主页 URL 取,如 https://www.toutiao.com/c/user/token/MS4wLjABAAAAxxxx/
+  // 头条账号:token 从作者主页 URL 取,如 https://www.toutiao.com/c/user/token/<token>/
   // (内置 a_bogus 签名直连官方接口,无需自建 RSSHub)
   {
-    id: "toutiao-account-1",
-    name: "头条账号示例",
+    id: "linshu-fabu",
+    name: "临沭发布",
     group: "账号订阅",
     kind: "builtin",
     route: "toutiao-user",
-    enabled: false,
-    token: "MS4wLjABAAAA替换成作者主页URL里的token",
-    home: "https://www.toutiao.com/",
+    enabled: true,
+    token: "CifrwCu3Stgkv4DazvWToMrdRAkapyTYlVGoZB-bjLoKFBXnpc4kPR4aSQo8AAAAAAAAAAAAAFD9Lrvz2RtLo3R-cyJVS-U1TYyszeQgKfMBNJXzLuzXaD2iMnvWILVRdj3yuDuiaXt5EMijng4Yw8WD6gQiAQPZICsc",
+    home: "https://www.toutiao.com/c/user/token/CifrwCu3Stgkv4DazvWToMrdRAkapyTYlVGoZB-bjLoKFBXnpc4kPR4aSQo8AAAAAAAAAAAAAFD9Lrvz2RtLo3R-cyJVS-U1TYyszeQgKfMBNJXzLuzXaD2iMnvWILVRdj3yuDuiaXt5EMijng4Yw8WD6gQiAQPZICsc/",
   },
   // 微信公众号:wewe-rss(Docker 自建)或 we-mp-rss 生成的 RSS 地址
   {
