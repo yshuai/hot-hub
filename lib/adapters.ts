@@ -1,23 +1,26 @@
 import Parser from "rss-parser";
+import { generate_a_bogus } from "./a-bogus";
 import { DAILYHOT_API_BASE } from "./sources";
 import type { FeedItem, SourceConfig } from "./types";
 
-const UA = "Mozilla/5.0 (compatible; HotHub/0.1; +https://github.com/yshuai/hot-hub)";
+// 必须是真实浏览器 UA:部分站点(B站/头条)对爬虫 UA 风控,返回空数据或 412
+const UA =
+  "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/132.0.0.0 Safari/537.36";
 const parser = new Parser({ headers: { "user-agent": UA } });
 const TIMEOUT = 10_000;
 const MAX_ITEMS = 30;
 
-async function fetchText(url: string): Promise<string> {
+async function fetchText(url: string, headers?: Record<string, string>): Promise<string> {
   const res = await fetch(url, {
-    headers: { "user-agent": UA },
+    headers: { "user-agent": UA, ...headers },
     signal: AbortSignal.timeout(TIMEOUT),
   });
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
   return res.text();
 }
 
-async function fetchJson(url: string): Promise<any> {
-  const text = await fetchText(url);
+async function fetchJson(url: string, headers?: Record<string, string>): Promise<any> {
+  const text = await fetchText(url, headers);
   try {
     return JSON.parse(text);
   } catch {
@@ -104,6 +107,7 @@ async function fetchGithubTrending(): Promise<FeedItem[]> {
 async function fetchToutiaoBoard(): Promise<FeedItem[]> {
   const json = await fetchJson(
     "https://www.toutiao.com/hot-event/hot-board/?origin=toutiao_pc",
+    { referer: "https://www.toutiao.com/" },
   );
   const list: any[] = Array.isArray(json?.data) ? json.data : [];
   return list
@@ -116,10 +120,59 @@ async function fetchToutiaoBoard(): Promise<FeedItem[]> {
     .slice(0, MAX_ITEMS);
 }
 
-/** B站排行榜:官方接口,无需鉴权 */
+/**
+ * 今日头条账号更新:官方 pc/list/feed 接口 + a_bogus 签名。
+ * 签名算法移植自 RSSHub(lib/routes/toutiao,MIT),与请求 UA 绑定。
+ * token 从作者主页 URL 取:https://www.toutiao.com/c/user/token/<token>/
+ */
+async function fetchToutiaoUser(token: string): Promise<FeedItem[]> {
+  const query = `category=profile_all&token=${token}&max_behot_time=0&entrance_gid&aid=24&app_name=toutiao_web`;
+  const aBogus = generate_a_bogus(query, UA);
+  const json = await fetchJson(
+    `https://www.toutiao.com/api/pc/list/feed?${query}&a_bogus=${aBogus}`,
+    { referer: "https://www.toutiao.com/" },
+  );
+  const list: any[] = Array.isArray(json?.data) ? json.data : [];
+  if (!list.length) throw new Error(`接口无数据(code=${json?.message ?? json?.code ?? "?"})`);
+  return list
+    .map((item) => {
+      let url = "";
+      let title = "";
+      switch (item.cell_type) {
+        case 0:
+        case 49: // 视频
+          url = `https://www.toutiao.com/video/${item.id}/`;
+          title = String(item.title ?? "").trim();
+          break;
+        case 32: // 微头条(无标题,取正文首行)
+          url = `https://www.toutiao.com/w/${item.id}/`;
+          title = String(item.content ?? "").split("\n", 1)[0].trim();
+          break;
+        default: // 文章
+          url = `https://www.toutiao.com/article/${item.id}/`;
+          title = String(item.title ?? "").trim();
+      }
+      const ts = Number(item.publish_time);
+      return {
+        title,
+        url,
+        time: ts
+          ? new Date(ts * 1000).toISOString().slice(0, 16).replace("T", " ")
+          : undefined,
+      };
+    })
+    .filter((it) => it.title && it.url)
+    .slice(0, MAX_ITEMS);
+}
+
+/** B站排行榜:官方接口,无需鉴权(风控时返回 code≠0 或空 list,均显式报错) */
 async function fetchBilibiliRanking(): Promise<FeedItem[]> {
-  const json = await fetchJson("https://api.bilibili.com/x/web-interface/ranking/v2");
+  const json = await fetchJson("https://api.bilibili.com/x/web-interface/ranking/v2", {
+    referer: "https://www.bilibili.com/",
+  });
+  if (json?.code !== 0) throw new Error(`B站接口 code=${json?.code ?? "?"}`);
   const list: any[] = Array.isArray(json?.data?.list) ? json.data.list : [];
+  if (!list.length) throw new Error("接口返回空列表(可能被风控)");
   return list
     .slice(0, MAX_ITEMS)
     .map((v) => ({
@@ -176,6 +229,9 @@ async function fetchBuiltin(src: SourceConfig): Promise<FeedItem[]> {
       return fetchGithubTrending();
     case "toutiao-board":
       return fetchToutiaoBoard();
+    case "toutiao-user":
+      if (!src.token) throw new Error("缺少 token(在 sources.ts 的 token 字段填头条账号 token)");
+      return fetchToutiaoUser(src.token);
     case "bilibili-ranking":
       return fetchBilibiliRanking();
     case "weibo-hot":

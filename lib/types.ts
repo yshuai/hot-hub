@@ -13,6 +13,8 @@ export interface SourceConfig {
   route?: string;
   /** RSS 地址(kind=rss 时必填):RSSHub 路由、wewe-rss 公众号、AIHOT、GitHubTrendingRSS 等 */
   url?: string;
+  /** 附加参数:kind=builtin route=toutiao-user 时为头条账号 token(作者主页 URL 中取) */
+  token?: string;
   /** 信源主页(可选,卡片右上角"来源"链接) */
   home?: string;
   /** 设为 false 暂停抓取;加自己的账号源后改为 true */

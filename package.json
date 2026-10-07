@@ -11,12 +11,15 @@
     "xianyu:push": "python scripts/push_xianyu_report.py"
   },
   "dependencies": {
+    "crypto-js": "^4.1.1",
     "next": "^15.5.0",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
-    "rss-parser": "^3.13.0"
+    "rss-parser": "^3.13.0",
+    "sm-crypto-v2": "^1.15.1"
   },
   "devDependencies": {
+    "@types/crypto-js": "^4.2.2",
     "@types/node": "^22.10.0",
     "@types/react": "^19.1.0",
     "@types/react-dom": "^19.1.0",
