@@ -1,10 +1,14 @@
 import { fetchAllSources } from "@/lib/fetchAll";
+import { getXianyuArchive, xianyuReportUrl } from "@/lib/xianyu";
 
 // ISR:每 10 分钟重新生成一次页面(期间命中 Vercel 边缘缓存)
 export const revalidate = 600;
 
 export default async function Home() {
-  const results = await fetchAllSources();
+  const [results, xianyu] = await Promise.all([
+    fetchAllSources(),
+    Promise.resolve(getXianyuArchive()),
+  ]);
   const groups = [...new Set(results.map((r) => r.group))];
   const latest = Math.max(...results.map((r) => r.fetchedAt));
 
@@ -36,6 +40,68 @@ export default async function Home() {
           </p>
         </div>
       </header>
+
+      {xianyu && (
+        <section className="mb-10">
+          <h2 className="mb-1 border-l-4 border-neutral-900 pl-2 text-lg font-semibold">
+            闲鱼行情
+          </h2>
+          <p className="mb-3 text-xs text-neutral-400">
+            {xianyu.updatedAt
+              ? `归档 ${xianyu.file} · 由本地 xianyu-radar 采集推送`
+              : null}
+          </p>
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {xianyu.reports.map((r, i) => (
+              <article
+                key={i}
+                className="rounded-xl border border-neutral-200 bg-white p-4 shadow-sm"
+              >
+                <h3 className="mb-2 flex items-center justify-between">
+                  <span className="font-medium">{r.keyword}</span>
+                  <a
+                    href={xianyuReportUrl(xianyu.file)}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="text-xs text-neutral-400 hover:text-neutral-700"
+                  >
+                    完整报告 ↗
+                  </a>
+                </h3>
+                <dl className="space-y-1 text-sm text-neutral-700">
+                  {r.sample != null && (
+                    <div className="flex justify-between">
+                      <dt className="text-neutral-500">样本</dt>
+                      <dd>{r.sample} 条</dd>
+                    </div>
+                  )}
+                  {r.median && (
+                    <div className="flex justify-between">
+                      <dt className="text-neutral-500">中位价</dt>
+                      <dd>¥{r.median}</dd>
+                    </div>
+                  )}
+                  {r.bestBand && (
+                    <div className="flex justify-between">
+                      <dt className="text-neutral-500">最佳机会</dt>
+                      <dd className="font-medium text-amber-600">
+                        {r.bestBand}
+                        {r.bestScore && ` · 机会分 ${r.bestScore}`}
+                      </dd>
+                    </div>
+                  )}
+                  {r.supply && (
+                    <div className="flex justify-between">
+                      <dt className="text-neutral-500">主导供给</dt>
+                      <dd>{r.supply}</dd>
+                    </div>
+                  )}
+                </dl>
+              </article>
+            ))}
+          </div>
+        </section>
+      )}
 
       {groups.map((group) => (
         <section key={group} className="mb-10">

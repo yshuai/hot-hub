@@ -87,6 +87,28 @@ scripts/daily.mjs     # 每日日报生成(Actions 定时跑)
 .github/workflows/daily.yml
 ```
 
+## 闲鱼行情(本地采集 → 仓库归档 → 页面展示)
+
+闲鱼没有公开接口,行情数据由 [xianyu-radar](https://github.com/duceman495/xianyu-radar)(Python CLI)从**你本机**采集:扫码登录自己的闲鱼账号 → 只读采集公开在售商品 → 计算"机会分"(需求/供给比)→ 生成 Markdown 行情报告。
+
+```bash
+# 一次性准备(任意目录)
+pip install git+https://github.com/duceman495/xianyu-radar
+python -m xianyu_radar login          # 手机闲鱼 App 扫码,Cookie 约 7 天有效
+
+# 采集 + 分析 + 归档推送(一条命令)
+npm run xianyu:push                   # 默认词单在 scripts/push_xianyu_report.py
+npm run xianyu:push "4090" "柳编收纳筐"   # 或指定关键词
+```
+
+脚本会把当天所有关键词的报告写入 `daily/xianyu/YYYY-MM-DD.md` 并 git push,Vercel 自动重新部署后,首页顶部的"闲鱼行情"分组展示每个词的中位价 / 最佳机会价格带 / 机会分,点"完整报告"看全文。
+
+每日自动采集(可选):Windows 计划任务示例,每天 20:30 跑一次——
+
+```
+schtasks /create /tn "hot-hub xianyu" /sc daily /st 20:30 /tr "cmd /c cd /d <hot-hub路径> && npm run xianyu:push"
+```
+
 ## 免责声明
 
 本项目仅聚合公开接口与 RSS 内容用于个人阅读,不存储原文;各榜单版权归原平台所有。爬取类信源请遵守目标网站条款,控制频率。
